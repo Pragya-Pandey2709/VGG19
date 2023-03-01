@@ -21,57 +21,20 @@ losses, metrics, Model, and Dense: sub-libraries of keras for defining loss func
 ImageDataGenerator: a class for generating image data in batches with real-time data augmentation.
 image: a module from keras.preprocessing for performing image-related tasks.
 python
-Copy code
-from tensorflow.keras import optimizers
-from keras import losses 
-from keras import optimizers 
-from keras import metrics
-import keras
-from keras.models import Model
-from keras.layers import Dense
-from keras import optimizers
-from keras.preprocessing.image import ImageDataGenerator
-from keras.preprocessing import image
+
 The next block of code creates an instance of ImageDataGenerator with no image augmentation, trdata, for the training set and another instance with the same characteristics, tsdata, for the test set. Then it uses the flow_from_directory method of these instances to create iterators for training and test sets that will yield image data in batches. The images in the specified directories are resized to 224x224 pixels during this process.
 
-makefile
-Copy code
-trdata = ImageDataGenerator()
-traindata = trdata.flow_from_directory(directory="/content/drive/MyDrive/Colab Notebooks/chestx-ray/traindata",target_size=(224,224))
-tsdata = ImageDataGenerator()
-testdata = tsdata.flow_from_directory(directory="/content/drive/MyDrive/Colab Notebooks/chestx-ray/testdata", target_size=(224,224))
+
 The next block of code loads a pre-trained VGG19 model with weights trained on ImageNet dataset, including the fully connected top layer that contains 1000 neurons for classifying ImageNet images into 1000 classes. The code then prints out the summary of the model.
 
-python
-Copy code
-from keras.applications.vgg19 import VGG19
-vggmodel = VGG19(weights='imagenet', include_top=True)
-vggmodel.summary()
+
 The next block of code sets the first 19 layers of the VGG19 model as non-trainable since they have already been trained on ImageNet and contain important features. The last fully connected layer of the model is removed, and a new dense layer with two neurons and softmax activation function is added to classify our two target classes.
 
-scss
-Copy code
-for layers in (vggmodel.layers)[:19]:
-    print(layers)
-    layers.trainable = False
-    
-X= vggmodel.layers[-2].output
-predictions = Dense(2, activation="softmax")(X)
-model_final = Model(vggmodel.input, predictions)
 
-model_final.summary()
 The next block of code compiles the model with mean squared error loss function, stochastic gradient descent optimizer, and categorical accuracy metric.
 
-python
-Copy code
-model_final.compile(loss = 'mean_squared_error', optimizer = 'sgd', metrics = [metrics.categorical_accuracy])
-The next block of code trains the model for 2 epochs on the training set and uses the test set for validation. It also saves the model weights to a file named "vgg19New.h5" whenever the validation categorical accuracy improves.
 
-python
-Copy code
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-checkpoint = ModelCheckpoint("vgg19New.h5", monitor='val_categorical_accuracy', verbose=1, save_best_only=False, save_weights_only=False, mode='auto', period=1)
-early = EarlyStopping(monitor='val_categorical_accuracy', min_delta=0, patience=20, verbose=1,
+The next block of code trains the model for 2 epochs on the training set and uses the test set for validation. It also saves the model weights to a file named "vgg19New.h5" whenever the validation categorical accuracy improves.
 
 
 
